@@ -1,10 +1,21 @@
 services:
   api:
-    build: .
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
     ports:
       - "8000:8000"
     volumes:
-      # Persist the SQLite file across container restarts.
-      - ./data:/app/data
+      - ../backend/leaderboard.db:/app/leaderboard.db
     environment:
       - PYTHONUNBUFFERED=1
+
+  frontend:
+    image: python:3.12-slim
+    working_dir: /frontend
+    volumes:
+      - ../frontend:/frontend
+    ports:
+      - "5173:5173"
+    command: python -m http.server 5173
+    
