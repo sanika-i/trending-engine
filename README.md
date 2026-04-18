@@ -47,6 +47,8 @@ Then open `frontend/index.html` in a browser. (Or serve it via `python -m http.s
 
 The frontend's API base URL is set at the top of `index.html` — change `const API = "http://127.0.0.1:8000"` if hosting elsewhere.
 
+website link - https://trending-engine-2.onrender.com/
+
 ## Running in Docker
 
 ```bash
