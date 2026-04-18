@@ -260,43 +260,46 @@ async function renderPerformance() {
     const container = document.getElementById("performance-feed");
 
     if (!data.endpoints.length) {
-      container.innerHTML = `<div class="empty">No performance data yet</div>`;
+      container.innerHTML = emptyState();
       return;
     }
 
     container.innerHTML = `
-      <div class="post">
-        <div class="post-body">
-          <div class="post-header">
-            <span class="post-handle">Overall</span>
-          </div>
-          <div class="post-text">
-            Avg Response Time: ${data.overall_avg_ms.toFixed(2)} ms
-          </div>
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-title">Endpoints Tracked</div>
+          <div class="kpi-value">${data.endpoints.length}</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-title">Overall Avg</div>
+          <div class="kpi-value">${data.overall_avg_ms.toFixed(1)}<span style="font-size:14px;font-weight:400;color:var(--muted)"> ms</span></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-title">Fastest Avg</div>
+          <div class="kpi-value">${Math.min(...data.endpoints.map(e => e.avg_ms)).toFixed(1)}<span style="font-size:14px;font-weight:400;color:var(--muted)"> ms</span></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-title">Slowest Avg</div>
+          <div class="kpi-value">${Math.max(...data.endpoints.map(e => e.avg_ms)).toFixed(1)}<span style="font-size:14px;font-weight:400;color:var(--muted)"> ms</span></div>
         </div>
       </div>
 
-      ${data.endpoints.map(ep => `
-        <div class="post">
-          <div class="post-body">
-            <div class="post-header">
-              <span class="post-handle">${ep.method} ${ep.endpoint}</span>
+      <div class="stat-grid">
+        ${data.endpoints.map(ep => `
+          <div class="stat-card">
+            <div class="stat-title">
+              <span style="color:var(--accent);font-family:var(--mono);font-size:11px;margin-right:6px">${ep.method}</span>${ep.endpoint}
             </div>
-
-            <div class="post-text">
-              Calls: ${ep.call_count} <br>
-              Avg: ${ep.avg_ms.toFixed(2)} ms <br>
-              Min: ${ep.min_ms.toFixed(2)} ms <br>
-              Max: ${ep.max_ms.toFixed(2)} ms
-            </div>
+            <div class="stat-row"><span>Calls</span><span>${ep.call_count}</span></div>
+            <div class="stat-row"><span>Avg</span><span>${ep.avg_ms.toFixed(2)} ms</span></div>
+            <div class="stat-row"><span>Min</span><span>${ep.min_ms.toFixed(2)} ms</span></div>
+            <div class="stat-row"><span>Max</span><span>${ep.max_ms.toFixed(2)} ms</span></div>
           </div>
-        </div>
-      `).join("")}
+        `).join("")}
+      </div>
     `;
 
   } catch (err) {
     toast("Performance load failed: " + err.message);
   }
 }
-
-
