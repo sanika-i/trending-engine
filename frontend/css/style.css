@@ -356,6 +356,16 @@ button:active { transform: scale(0.96); }
   border-color: var(--accent);
 }
 
+.eng-btn.history:hover {
+  color: #a78bfa;
+  background: rgba(167,139,250,0.12);
+  border-color: rgba(167,139,250,0.25);
+}
+
+.eng-btn.history .eng-icon {
+  color: #a78bfa;
+}
+
 #stats-feed .post {
   border-left: 3px solid var(--accent);
 }

@@ -8,6 +8,7 @@ const ICONS = {
   heart: `<svg viewBox="0 0 10 9"><path d="M5 8.5S.5 5.5.5 2.8A2.3 2.3 0 015 1.6a2.3 2.3 0 014.5 1.2C9.5 5.5 5 8.5 5 8.5z"/></svg>`,
   share: `<svg viewBox="0 0 10 10"><path d="M1 5l3-3v2h2c2 0 3 1.5 3 3 0-1-1-2-3-2H4v2L1 5z"/></svg>`,
   save: `<svg viewBox="0 0 10 11"><path d="M2 1h6v9L5 7.5 2 10V1z"/></svg>`,
+  history: `<svg viewBox="0 0 10 10"><path d="M5 1a4 4 0 100 8A4 4 0 005 1zM5 3v2.5l1.5 1"/></svg>`,
 };
 
 let _scoreChart = null;
@@ -125,8 +126,9 @@ async function renderList() {
             <span class="eng-icon">${ICONS.save}</span>
             <span class="eng-count">${p.saves}</span>
           </button>
-          <button class="hist-btn" onclick="openHistoryModal(${p.id})">
-              🕒 History
+          <button class="eng-btn history" data-action="history" data-id="${p.id}" onclick="openHistoryModal(${p.id})">
+            <span class="eng-icon">${ICONS.history}</span>
+            <span class="eng-count">History</span>
           </button>
         </div>
       </div>
@@ -244,7 +246,7 @@ async function renderStats() {
         },
         y: {
           ticks: { color: "#71767b", stepSize: 1 },
-          grid: { display: false},
+          grid: { display: false },
           beginAtZero: true,
         },
       },
