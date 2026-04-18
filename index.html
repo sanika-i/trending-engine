@@ -3,458 +3,576 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Leaderboard</title>
+  <title>Trending Leaderboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <style>
     :root {
-      --bg:        #f7f7f5;
-      --surface:   #ffffff;
-      --border:    rgba(0,0,0,0.08);
-      --border-2:  rgba(0,0,0,0.15);
-      --text:      #1a1a1a;
-      --muted:     #666;
-      --subtle:    #999;
-      --accent-bg: #e6f1fb;
-      --accent-fg: #0c447c;
-      --accent-bd: rgba(55,138,221,0.4);
-      --radius:    12px;
-      --radius-sm: 8px;
+      --bg:         #000000;
+      --surface:    #0f0f0f;
+      --surface-2:  #161616;
+      --surface-3:  #1e1e1e;
+      --border:     rgba(255,255,255,0.07);
+      --border-2:   rgba(255,255,255,0.12);
+      --text:       #e7e9ea;
+      --muted:      #71767b;
+      --subtle:     #3e4144;
+      --accent:     #1d9bf0;
+      --accent-dim: rgba(29,155,240,0.12);
+      --heart:      #f91880;
+      --heart-dim:  rgba(249,24,128,0.12);
+      --share:      #00ba7c;
+      --share-dim:  rgba(0,186,124,0.12);
+      --save:       #1d9bf0;
+      --save-dim:   rgba(29,155,240,0.12);
+      --gold:       #FFD700;
+      --gold-dim:   rgba(255,215,0,0.12);
+      --radius:     16px;
+      --radius-sm:  10px;
+      --mono:       'DM Mono', monospace;
+      --sans:       'Syne', sans-serif;
     }
 
-    * { box-sizing: border-box; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
     body {
-      margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
       background: var(--bg);
       color: var(--text);
+      font-family: var(--sans);
       line-height: 1.5;
-    }
-    .container { max-width: 960px; margin: 0 auto; padding: 2rem 1rem; }
-
-    /* ---- Toolbar ---- */
-    .toolbar {
-      display: flex; align-items: center; justify-content: space-between;
-      margin-bottom: 1.5rem; gap: 12px; flex-wrap: wrap;
-    }
-    .toolbar h1 { margin: 0 0 4px 0; font-size: 22px; font-weight: 500; }
-    .toolbar .subtitle { margin: 0; font-size: 14px; color: var(--muted); }
-    .toolbar-left { display: flex; align-items: center; gap: 10px; }
-    .toolbar-right { display: flex; gap: 8px; align-items: flex-start; position: relative; }
-
-    /* ---- Buttons ---- */
-    button {
-      background: var(--surface);
-      border: 0.5px solid var(--border-2);
-      border-radius: var(--radius-sm);
-      padding: 8px 14px;
-      font-size: 14px;
-      font-family: inherit;
-      color: var(--text);
-      cursor: pointer;
-      transition: background 0.12s;
-    }
-    button:hover { background: var(--bg); }
-    button:active { transform: scale(0.98); }
-    button.primary {
-      background: var(--accent-bg);
-      border-color: var(--accent-bd);
-      color: var(--accent-fg);
-      font-weight: 500;
-    }
-    button.icon-btn { padding: 6px 10px; font-size: 14px; }
-    button.active { background: var(--bg); font-weight: 500; }
-    button.engagement { font-size: 13px; padding: 6px 12px; }
-    button.engagement .count { color: var(--muted); margin-left: 4px; }
-
-    /* ---- Table (leaderboard) ---- */
-    .card {
-      background: var(--surface);
-      border: 0.5px solid var(--border);
-      border-radius: var(--radius);
-      overflow: hidden;
-    }
-    table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-    th, td {
-      padding: 12px 14px; font-size: 14px; text-align: left;
-      border-bottom: 0.5px solid var(--border);
-    }
-    th {
-      background: var(--bg);
-      font-size: 13px; font-weight: 500; color: var(--muted);
-    }
-    tbody tr:last-child td { border-bottom: none; }
-    td.num, th.num { text-align: right; }
-    .rank { color: var(--muted); font-variant-numeric: tabular-nums; }
-    .empty-state {
-      padding: 3rem 1rem; text-align: center; color: var(--subtle);
+      min-height: 100vh;
     }
 
-    /* ---- List view cards ---- */
-    .post-list { display: flex; flex-direction: column; gap: 10px; }
-    .post-card {
-      background: var(--surface);
-      border: 0.5px solid var(--border);
-      border-radius: var(--radius);
-      padding: 1rem 1.25rem;
-    }
-    .post-head {
-      display: flex; justify-content: space-between;
-      gap: 12px; align-items: flex-start; margin-bottom: 10px;
-    }
-    .post-desc { margin: 0; font-size: 15px; font-weight: 500; flex: 1; }
-    .post-time { font-size: 12px; color: var(--subtle); white-space: nowrap; }
-    .post-actions {
-      display: flex; justify-content: space-between; align-items: center;
-      flex-wrap: wrap; gap: 10px;
-    }
-    .post-actions-left { display: flex; gap: 8px; flex-wrap: wrap; }
-    .post-score { font-size: 12px; color: var(--subtle); }
-
-    /* ---- Filters dropdown ---- */
-    .dropdown {
-      position: absolute; top: calc(100% + 6px); right: 0;
-      background: var(--surface); border: 0.5px solid var(--border-2);
-      border-radius: var(--radius-sm); min-width: 220px; padding: 6px;
-      z-index: 10;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-    }
-    .dropdown-label {
-      margin: 6px 10px 4px; font-size: 11px; font-weight: 500;
-      color: var(--subtle); text-transform: uppercase; letter-spacing: 0.05em;
-    }
-    .dropdown-item {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 8px 10px; font-size: 14px; border-radius: var(--radius-sm);
-      cursor: pointer;
-    }
-    .dropdown-item:hover { background: var(--bg); }
-    .dropdown-item.active { background: var(--bg); }
-    .dropdown-hint {
-      margin: 6px 10px 4px; padding-top: 6px;
-      border-top: 0.5px solid var(--border); font-size: 11px; color: var(--subtle);
-    }
     .hidden { display: none !important; }
 
-    /* ---- Modal ---- */
-    .modal-backdrop {
-      position: fixed; inset: 0; background: rgba(0,0,0,0.45);
+    .shell {
+      max-width: 640px;
+      margin: 0 auto;
+      border-left: 0.5px solid var(--border);
+      border-right: 0.5px solid var(--border);
+      min-height: 100vh;
+    }
+
+    .topnav {
+      position: sticky; top: 0; z-index: 50;
+      background: rgba(0,0,0,0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 0.5px solid var(--border);
+      padding: 0 16px;
+      display: flex; align-items: center; justify-content: space-between;
+      height: 56px;
+    }
+    .topnav-brand {
+      font-size: 20px; font-weight: 800; color: var(--text);
+      letter-spacing: -0.04em; display: flex; align-items: center; gap: 8px;
+    }
+    .live-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--share);
+      animation: livepulse 1.8s ease-in-out infinite;
+    }
+    @keyframes livepulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.8)} }
+
+    .topnav-actions { display: flex; gap: 8px; align-items: center; }
+
+    .tabs {
+      display: flex; border-bottom: 0.5px solid var(--border);
+      position: sticky; top: 56px; z-index: 40;
+      background: rgba(0,0,0,0.85); backdrop-filter: blur(12px);
+    }
+    .tab {
+      flex: 1; text-align: center; padding: 14px 0;
+      font-size: 14px; font-weight: 600; color: var(--muted);
+      cursor: pointer; border-bottom: 2px solid transparent;
+      transition: color 0.15s, border-color 0.15s;
+      letter-spacing: -0.01em;
+    }
+    .tab:hover { color: var(--text); background: rgba(255,255,255,0.03); }
+    .tab.active { color: var(--text); border-color: var(--accent); }
+
+    button {
+      font-family: var(--sans);
+      cursor: pointer;
+      border: none;
+      transition: all 0.12s;
+    }
+    button:active { transform: scale(0.96); }
+
+    .btn-ghost {
+      background: transparent;
+      border: 0.5px solid var(--border-2);
+      color: var(--text);
+      font-size: 14px; font-weight: 600;
+      padding: 7px 16px;
+      border-radius: 999px;
+    }
+    .btn-ghost:hover { background: var(--surface-3); }
+
+    .btn-primary {
+      background: var(--text);
+      color: var(--bg);
+      font-size: 14px; font-weight: 700;
+      padding: 7px 18px;
+      border-radius: 999px;
+      letter-spacing: -0.01em;
+    }
+    .btn-primary:hover { opacity: 0.88; }
+
+    .btn-icon {
+      background: transparent;
+      color: var(--muted);
+      font-size: 18px;
+      width: 36px; height: 36px;
+      border-radius: 50%;
       display: flex; align-items: center; justify-content: center;
-      z-index: 100; padding: 2rem 1rem;
+      border: 0.5px solid var(--border-2);
+    }
+    .btn-icon:hover { background: var(--surface-3); color: var(--text); }
+
+    .sort-bar {
+      display: flex; align-items: center; gap: 8px;
+      padding: 10px 16px; border-bottom: 0.5px solid var(--border);
+      overflow-x: auto; scrollbar-width: none;
+    }
+    .sort-bar::-webkit-scrollbar { display: none; }
+    .sort-label { font-size: 12px; color: var(--muted); white-space: nowrap; margin-right: 4px; }
+    .sort-chip {
+      font-size: 12px; font-weight: 600; font-family: var(--sans);
+      padding: 4px 12px; border-radius: 999px; white-space: nowrap;
+      background: var(--surface-3); color: var(--muted);
+      border: 0.5px solid var(--border);
+      cursor: pointer; transition: all 0.12s;
+    }
+    .sort-chip:hover { color: var(--text); border-color: var(--border-2); }
+    .sort-chip.active { background: var(--accent-dim); color: var(--accent); border-color: rgba(29,155,240,0.3); }
+    .sort-dir { font-size: 11px; margin-left: 2px; }
+
+    .feed { display: flex; flex-direction: column; }
+
+    .post {
+      display: flex; gap: 12px;
+      padding: 14px 16px;
+      border-bottom: 0.5px solid var(--border);
+      transition: background 0.1s;
+    }
+    .post:hover { background: rgba(255,255,255,0.02); }
+
+    .post-avatar {
+      width: 40px; height: 40px; border-radius: 50%;
+      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 15px; font-weight: 800; color: #fff;
+      letter-spacing: -0.02em;
+    }
+
+    .post-body { flex: 1; min-width: 0; }
+
+    .post-header {
+      display: flex; align-items: center; gap: 6px;
+      margin-bottom: 4px; flex-wrap: wrap;
+    }
+    .post-handle { font-size: 14px; font-weight: 700; color: var(--text); }
+    .post-time { font-size: 13px; color: var(--muted); }
+    .post-rank-badge {
+      margin-left: auto;
+      font-size: 11px; font-weight: 700;
+      font-family: var(--mono);
+      padding: 2px 9px; border-radius: 999px;
+      color: var(--muted); background: var(--surface-3);
+      border: 0.5px solid var(--border);
+    }
+    .post-rank-badge.rank-1 { color: var(--gold); background: var(--gold-dim); border-color: rgba(255,215,0,0.25); }
+    .post-rank-badge.rank-2 { color: #C0C0C0; background: rgba(192,192,192,0.1); border-color: rgba(192,192,192,0.25); }
+    .post-rank-badge.rank-3 { color: #CD7F32; background: rgba(205,127,50,0.1); border-color: rgba(205,127,50,0.25); }
+
+    .post-text {
+      font-size: 15px; color: var(--text);
+      line-height: 1.55; margin-bottom: 10px;
+      word-break: break-word;
+    }
+
+    .score-bar-wrap { margin-bottom: 12px; }
+    .score-bar-track {
+      height: 2px; background: var(--surface-3); border-radius: 1px;
+    }
+    .score-bar-fill {
+      height: 100%; border-radius: 1px;
+      background: linear-gradient(90deg, var(--accent), var(--share));
+      transition: width 0.4s ease;
+    }
+    .score-label {
+      display: flex; justify-content: space-between;
+      margin-bottom: 5px;
+    }
+    .score-label-text { font-size: 11px; color: var(--muted); font-family: var(--mono); }
+    .score-label-val { font-size: 11px; color: var(--accent); font-family: var(--mono); font-weight: 500; }
+
+    .post-engage { display: flex; gap: 6px; flex-wrap: wrap; }
+
+    .eng-btn {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 13px; font-weight: 600;
+      padding: 6px 13px; border-radius: 999px;
+      background: transparent;
+      border: 0.5px solid var(--border);
+      color: var(--muted);
+      transition: all 0.15s;
+      font-family: var(--sans);
+    }
+    .eng-btn:hover { border-color: var(--border-2); }
+
+    .eng-btn.like:hover  { color: var(--heart); background: var(--heart-dim); border-color: rgba(249,24,128,0.25); }
+    .eng-btn.share:hover { color: var(--share); background: var(--share-dim); border-color: rgba(0,186,124,0.25); }
+    .eng-btn.save:hover  { color: var(--save);  background: var(--save-dim);  border-color: rgba(29,155,240,0.25); }
+
+    .eng-icon {
+      width: 16px; height: 16px; border-radius: 50%;
+      border: 1.5px solid currentColor;
+      flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+    }
+    .eng-btn.like  .eng-icon { color: var(--heart); }
+    .eng-btn.share .eng-icon { color: var(--share); }
+    .eng-btn.save  .eng-icon { color: var(--save); }
+
+    .eng-icon svg { width: 8px; height: 8px; fill: currentColor; }
+    .eng-count { font-family: var(--mono); font-size: 12px; }
+
+    .post-stats {
+      display: flex; gap: 16px; margin-bottom: 10px; flex-wrap: wrap;
+    }
+    .stat { display: flex; align-items: center; gap: 5px; font-size: 13px; color: var(--muted); }
+    .stat-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .stat-dot.heart { background: var(--heart); }
+    .stat-dot.share { background: var(--share); }
+    .stat-dot.save  { background: var(--save); }
+    .stat-val { font-family: var(--mono); font-size: 12px; }
+
+ 
+    .empty {
+      padding: 4rem 2rem; text-align: center; color: var(--muted);
+    }
+    .empty-icon {
+      width: 52px; height: 52px; border-radius: 50%;
+      background: var(--surface-2); border: 0.5px solid var(--border);
+      margin: 0 auto 16px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; color: var(--subtle);
+    }
+    .empty h3 { font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+    .empty p { font-size: 14px; color: var(--muted); }
+
+   
+    .modal-backdrop {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.7);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 200; padding: 1rem;
+      backdrop-filter: blur(4px);
     }
     .modal {
-      background: var(--surface); border-radius: var(--radius);
-      border: 0.5px solid var(--border); width: 100%; max-width: 440px;
+      background: var(--surface);
+      border: 0.5px solid var(--border-2);
+      border-radius: var(--radius);
+      width: 100%; max-width: 480px;
       overflow: hidden;
+      animation: modalIn 0.18s ease;
     }
+    @keyframes modalIn { from{opacity:0;transform:scale(0.96)} to{opacity:1;transform:scale(1)} }
+
     .modal-head {
-      padding: 1.25rem 1.5rem;
+      padding: 16px 20px;
       border-bottom: 0.5px solid var(--border);
       display: flex; align-items: center; justify-content: space-between;
     }
-    .modal-head h2 { margin: 0; font-size: 18px; font-weight: 500; }
-    .modal-body { padding: 1.25rem 1.5rem; }
-    .modal-body label { display: block; font-size: 13px; font-weight: 500;
-      color: var(--muted); margin-bottom: 6px; }
-    .modal-body label.small { font-size: 12px; color: var(--subtle);
-      font-weight: 400; margin-bottom: 4px; }
-    .modal-body textarea, .modal-body input {
-      width: 100%; padding: 8px 12px; font-size: 14px; font-family: inherit;
-      border: 0.5px solid var(--border-2); border-radius: var(--radius-sm);
-      background: var(--surface); color: var(--text);
-    }
-    .modal-body textarea { min-height: 72px; resize: vertical; }
-    .field-hint { margin: 4px 0 0 0; font-size: 12px; color: var(--subtle); }
-    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;
-      margin-bottom: 1.5rem; }
-    .modal-actions { display: flex; justify-content: flex-end; gap: 8px; }
+    .modal-head h2 { font-size: 18px; font-weight: 800; color: var(--text); letter-spacing: -0.03em; }
 
-    /* ---- Toast ---- */
+    .modal-body { padding: 20px; }
+
+    .field { margin-bottom: 18px; }
+    .field label {
+      display: block; font-size: 12px; font-weight: 600;
+      color: var(--muted); margin-bottom: 8px;
+      text-transform: uppercase; letter-spacing: 0.06em;
+    }
+    .field textarea, .field input[type="number"] {
+      width: 100%; background: var(--surface-2);
+      border: 0.5px solid var(--border-2);
+      border-radius: var(--radius-sm);
+      color: var(--text); font-family: var(--sans);
+      font-size: 15px; padding: 10px 14px;
+      outline: none; transition: border-color 0.15s;
+    }
+    .field textarea:focus, .field input[type="number"]:focus {
+      border-color: var(--accent);
+    }
+    .field textarea { min-height: 80px; resize: vertical; line-height: 1.5; }
+    .field-hint { font-size: 12px; color: var(--muted); margin-top: 5px; }
+
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+    .grid-3 label { font-size: 11px; color: var(--muted); margin-bottom: 5px; display: flex; align-items: center; gap: 5px; }
+    .grid-3 .dot { width: 7px; height: 7px; border-radius: 50%; }
+
+    .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 6px; }
+
     .toast {
-      position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-      background: var(--text); color: var(--surface);
-      padding: 10px 16px; border-radius: var(--radius-sm); font-size: 14px;
-      z-index: 200; opacity: 0; transition: opacity 0.2s;
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+      background: var(--text); color: var(--bg);
+      padding: 10px 18px; border-radius: 999px;
+      font-size: 14px; font-weight: 600; font-family: var(--sans);
+      z-index: 300; opacity: 0;
+      transition: opacity 0.2s, transform 0.2s;
+      pointer-events: none; white-space: nowrap;
     }
     .toast.show { opacity: 1; }
+
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--surface-3); border-radius: 2px; }
   </style>
 </head>
 <body>
 
-<div class="container">
+<div class="shell">
 
-  <!-- ============ HOME (leaderboard) ============ -->
+  <nav class="topnav">
+    <div class="topnav-brand">
+      <div class="live-dot"></div>
+      trending
+    </div>
+    <div class="topnav-actions">
+      <button class="btn-primary" id="btn-open-add">+ Post</button>
+    </div>
+  </nav>
+
+  <div class="tabs">
+    <div class="tab active" id="tab-home" onclick="show('home')">Top 10</div>
+    <div class="tab" id="tab-list" onclick="show('list')">All posts</div>
+  </div>
+
   <div id="home-view">
-    <div class="toolbar">
-      <div>
-        <h1>Top 10 leaderboard</h1>
-        <p class="subtitle">Score = shares×3 + saves×2 + likes×1 − 0.5×days since posted</p>
-      </div>
-      <div class="toolbar-right">
-        <button id="btn-open-list">List</button>
-        <button class="primary" id="btn-open-add-home">+ Add post</button>
-      </div>
-    </div>
-    <div class="card">
-      <table>
-        <thead>
-          <tr>
-            <th style="width:6%">#</th>
-            <th style="width:34%">Description</th>
-            <th class="num" style="width:10%">Likes</th>
-            <th class="num" style="width:10%">Shares</th>
-            <th class="num" style="width:10%">Saves</th>
-            <th style="width:15%">Posted</th>
-            <th class="num" style="width:15%">Score</th>
-          </tr>
-        </thead>
-        <tbody id="leaderboard-body"></tbody>
-      </table>
-    </div>
+    <div class="feed" id="leaderboard-feed"></div>
   </div>
 
-  <!-- ============ LIST VIEW ============ -->
   <div id="list-view" class="hidden">
-    <div class="toolbar">
-      <div class="toolbar-left">
-        <button class="icon-btn" id="btn-back">←</button>
-        <div>
-          <h1>All posts</h1>
-          <p class="subtitle" id="list-subtitle">Interact to boost a post up the leaderboard</p>
-        </div>
-      </div>
-      <div class="toolbar-right">
-        <div style="position:relative">
-          <button id="btn-filters">
-            <span>Filters</span>
-            <span id="filter-indicator" style="color:var(--muted);font-size:12px"></span>
-            <span style="font-size:10px;color:var(--muted)">▼</span>
-          </button>
-          <div class="dropdown hidden" id="filters-dropdown">
-            <div class="dropdown-label">Sort by column</div>
-            <div class="dropdown-item" data-sort="score">
-              <span>Score</span><span class="arrow"></span>
-            </div>
-            <div class="dropdown-item" data-sort="description">
-              <span>Description</span><span class="arrow"></span>
-            </div>
-            <div class="dropdown-item" data-sort="likes">
-              <span>Likes</span><span class="arrow"></span>
-            </div>
-            <div class="dropdown-item" data-sort="shares">
-              <span>Shares</span><span class="arrow"></span>
-            </div>
-            <div class="dropdown-item" data-sort="saves">
-              <span>Saves</span><span class="arrow"></span>
-            </div>
-            <div class="dropdown-item" data-sort="posted">
-              <span>Posted</span><span class="arrow"></span>
-            </div>
-            <div class="dropdown-hint">Click once for ↑, again for ↓</div>
-          </div>
-        </div>
-        <button class="primary" id="btn-open-add-list">+ Add post</button>
-      </div>
+    <div class="sort-bar">
+      <span class="sort-label">Sort:</span>
+      <div class="sort-chip active" data-sort="score">Score <span class="sort-dir">↓</span></div>
+      <div class="sort-chip" data-sort="likes">Likes <span class="sort-dir"></span></div>
+      <div class="sort-chip" data-sort="shares">Shares <span class="sort-dir"></span></div>
+      <div class="sort-chip" data-sort="saves">Saves <span class="sort-dir"></span></div>
+      <div class="sort-chip" data-sort="posted">Posted <span class="sort-dir"></span></div>
+      <div class="sort-chip" data-sort="description">A–Z <span class="sort-dir"></span></div>
     </div>
-    <div class="post-list" id="post-list"></div>
+    <div class="feed" id="post-feed"></div>
   </div>
 
-  <!-- ============ ADD MODAL ============ -->
   <div class="modal-backdrop hidden" id="modal-backdrop">
     <div class="modal">
       <div class="modal-head">
-        <h2>Add a new post</h2>
-        <button class="icon-btn" id="btn-close-modal">×</button>
+        <h2>New post</h2>
+        <button class="btn-icon" id="btn-close-modal">✕</button>
       </div>
       <div class="modal-body">
-        <div style="margin-bottom:1.25rem">
-          <label>Description</label>
-          <textarea id="input-description" placeholder="What's the post about?" maxlength="500"></textarea>
-          <p class="field-hint">Required · max 500 characters</p>
+        <div class="field">
+          <label>What's happening?</label>
+          <textarea id="input-description" placeholder="Write your post…" maxlength="500"></textarea>
+          <div class="field-hint">Required · max 500 characters</div>
         </div>
-        <label style="margin-bottom:10px">Initial engagement <span style="font-weight:400;color:var(--subtle)">(optional)</span></label>
-        <div class="grid-3">
-          <div>
-            <label class="small">Likes</label>
-            <input type="number" min="0" value="0" id="input-likes" />
-          </div>
-          <div>
-            <label class="small">Shares</label>
-            <input type="number" min="0" value="0" id="input-shares" />
-          </div>
-          <div>
-            <label class="small">Saves</label>
-            <input type="number" min="0" value="0" id="input-saves" />
+        <div class="field">
+          <label>Initial engagement <span style="font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></label>
+          <div class="grid-3">
+            <div>
+              <label><span class="dot" style="background:var(--heart)"></span>Likes</label>
+              <input type="number" min="0" value="0" id="input-likes" />
+            </div>
+            <div>
+              <label><span class="dot" style="background:var(--share)"></span>Shares</label>
+              <input type="number" min="0" value="0" id="input-shares" />
+            </div>
+            <div>
+              <label><span class="dot" style="background:var(--save)"></span>Saves</label>
+              <input type="number" min="0" value="0" id="input-saves" />
+            </div>
           </div>
         </div>
         <div class="modal-actions">
-          <button id="btn-cancel-add">Cancel</button>
-          <button class="primary" id="btn-submit-add">Add post</button>
+          <button class="btn-ghost" id="btn-cancel-add">Cancel</button>
+          <button class="btn-primary" id="btn-submit-add">Post it</button>
         </div>
       </div>
     </div>
   </div>
 
-  <div class="toast" id="toast"></div>
-
 </div>
 
+<div class="toast" id="toast"></div>
+
 <script>
-/* ============================================================
-   API client — every endpoint wrapped in one function.
-   Base URL is in one place so it's easy to point at a hosted server.
-   ============================================================ */
 const API = "http://127.0.0.1:8000";
+
+const AVATAR_COLORS = [
+  "#1d9bf0","#7856ff","#00ba7c","#f91880",
+  "#ff7043","#26c6da","#ab47bc","#ffa726"
+];
+function avatarColor(id) { return AVATAR_COLORS[id % AVATAR_COLORS.length]; }
+function avatarLetter(desc) { return (desc || "?")[0].toUpperCase(); }
+
 
 async function req(path, opts = {}) {
   const res = await fetch(`${API}${path}`, {
-    headers: { "Content-Type": "application/json" },
-    ...opts,
+    headers: { "Content-Type": "application/json" }, ...opts,
   });
-  if (!res.ok) {
-    const body = await res.text();
-    throw new Error(`${res.status}: ${body}`);
-  }
+  if (!res.ok) { const b = await res.text(); throw new Error(`${res.status}: ${b}`); }
   return res.status === 204 ? null : res.json();
 }
-
 const api = {
   leaderboard: () => req("/leaderboard"),
-  posts: (sortBy, order) => req(`/posts?sort_by=${sortBy}&order=${order}`),
-  add: (body) => req("/add", { method: "POST", body: JSON.stringify(body) }),
+  posts: (s, o) => req(`/posts?sort_by=${s}&order=${o}`),
+  add: (b) => req("/add", { method: "POST", body: JSON.stringify(b) }),
   like:  (id) => req(`/posts/${id}/like`,  { method: "POST" }),
   share: (id) => req(`/posts/${id}/share`, { method: "POST" }),
   save:  (id) => req(`/posts/${id}/save`,  { method: "POST" }),
 };
 
-/* ============================================================
-   View state — which screen, which sort.
-   ============================================================ */
-const state = {
-  view: "home",             // "home" | "list"
-  sortBy: "score",          // active sort column
-  order: "desc",            // "asc" | "desc"
-};
 
-/* ============================================================
-   Utilities
-   ============================================================ */
-function relativeTime(iso) {
-  const then = new Date(iso);
-  const days = Math.floor((new Date() - then) / 86400000);
-  if (days <= 0) return "Posted today";
-  if (days === 1) return "Posted yesterday";
-  return `Posted ${days} days ago`;
+const state = { view: "home", sortBy: "score", order: "desc" };
+function relTime(iso) {
+  const d = Math.floor((Date.now() - new Date(iso)) / 86400000);
+  const h = Math.floor((Date.now() - new Date(iso)) / 3600000);
+  const m = Math.floor((Date.now() - new Date(iso)) / 60000);
+  if (m < 1) return "just now";
+  if (m < 60) return `${m}m`;
+  if (h < 24) return `${h}h`;
+  if (d === 1) return "1d";
+  return `${d}d`;
 }
-
-function fmtScore(n) {
-  // Integer if whole, else 1 decimal. Avoids "170.0" noise while keeping "20.5".
-  return Number.isInteger(n) ? String(n) : n.toFixed(1);
+function fmtScore(n) { return Number.isInteger(n) ? String(n) : n.toFixed(1); }
+function escHtml(s) {
+  return String(s).replace(/[&<>"']/g, c =>
+    ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 }
-
 function toast(msg) {
   const el = document.getElementById("toast");
-  el.textContent = msg;
-  el.classList.add("show");
-  setTimeout(() => el.classList.remove("show"), 1500);
+  el.textContent = msg; el.classList.add("show");
+  setTimeout(() => el.classList.remove("show"), 1800);
 }
 
-/* ============================================================
-   Home view renderer
-   ============================================================ */
+const ICONS = {
+  heart: `<svg viewBox="0 0 10 9"><path d="M5 8.5S.5 5.5.5 2.8A2.3 2.3 0 015 1.6a2.3 2.3 0 014.5 1.2C9.5 5.5 5 8.5 5 8.5z"/></svg>`,
+  share: `<svg viewBox="0 0 10 10"><path d="M1 5l3-3v2h2c2 0 3 1.5 3 3 0-1-1-2-3-2H4v2L1 5z"/></svg>`,
+  save:  `<svg viewBox="0 0 10 11"><path d="M2 1h6v9L5 7.5 2 10V1z"/></svg>`,
+};
+
+function rankBadge(i) {
+  const n = i + 1;
+  const cls = n === 1 ? "rank-1" : n === 2 ? "rank-2" : n === 3 ? "rank-3" : "";
+  const label = n === 1 ? "🥇 #1" : n === 2 ? "🥈 #2" : n === 3 ? "🥉 #3" : `#${n}`;
+  return `<span class="post-rank-badge ${cls}">${label}</span>`;
+}
+
 async function renderHome() {
-  const tbody = document.getElementById("leaderboard-body");
+  const feed = document.getElementById("leaderboard-feed");
   const posts = await api.leaderboard();
 
-  if (posts.length === 0) {
-    tbody.innerHTML = `
-      <tr><td colspan="7" class="empty-state">
-        <div style="font-size:24px;color:var(--subtle)">+</div>
-        <div>No posts yet</div>
-        <div style="font-size:13px;color:var(--subtle)">Click "Add post" to submit your first entry</div>
-      </td></tr>`;
+  if (!posts.length) {
+    feed.innerHTML = `<div class="empty">
+      <div class="empty-icon">+</div>
+      <h3>No posts yet</h3>
+      <p>Hit "+ Post" to add the first entry</p>
+    </div>`;
     return;
   }
 
-  tbody.innerHTML = posts.map((p, i) => `
-    <tr>
-      <td class="rank">${i + 1}</td>
-      <td>${escapeHtml(p.description)}</td>
-      <td class="num">${p.likes}</td>
-      <td class="num">${p.shares}</td>
-      <td class="num">${p.saves}</td>
-      <td>${relativeTime(p.created_at)}</td>
-      <td class="num">${fmtScore(p.score)}</td>
-    </tr>
-  `).join("");
-}
+  const maxScore = posts[0]?.score || 1;
 
-/* ============================================================
-   List view renderer
-   ============================================================ */
-async function renderList() {
-  const list = document.getElementById("post-list");
-  const posts = await api.posts(state.sortBy, state.order);
-
-  // Subtitle reflects active sort
-  const dirWord = state.order === "asc" ? "ascending" : "descending";
-  document.getElementById("list-subtitle").textContent =
-    `Sorted by ${state.sortBy}, ${dirWord}`;
-
-  // Button indicator
-  const arrow = state.order === "asc" ? "↑" : "↓";
-  document.getElementById("filter-indicator").textContent =
-    `${cap(state.sortBy)} ${arrow}`;
-
-  // Dropdown active state
-  document.querySelectorAll(".dropdown-item").forEach(el => {
-    const isActive = el.dataset.sort === state.sortBy;
-    el.classList.toggle("active", isActive);
-    el.querySelector(".arrow").textContent = isActive ? arrow : "";
-  });
-
-  if (posts.length === 0) {
-    list.innerHTML = `<div class="empty-state card" style="padding:3rem 1rem">No posts yet</div>`;
-    return;
-  }
-
-  list.innerHTML = posts.map(p => `
-    <div class="post-card" data-id="${p.id}">
-      <div class="post-head">
-        <p class="post-desc">${escapeHtml(p.description)}</p>
-        <span class="post-time">${relativeTime(p.created_at)}</span>
-      </div>
-      <div class="post-actions">
-        <div class="post-actions-left">
-          <button class="engagement" data-action="like"  data-id="${p.id}">
-            Like<span class="count">· ${p.likes}</span>
-          </button>
-          <button class="engagement" data-action="share" data-id="${p.id}">
-            Share<span class="count">· ${p.shares}</span>
-          </button>
-          <button class="engagement" data-action="save"  data-id="${p.id}">
-            Save<span class="count">· ${p.saves}</span>
-          </button>
+  feed.innerHTML = posts.map((p, i) => `
+    <div class="post">
+      <div class="post-avatar" style="background:${avatarColor(p.id)}">${avatarLetter(p.description)}</div>
+      <div class="post-body">
+        <div class="post-header">
+          <span class="post-handle">@post_${p.id}</span>
+          <span class="post-time">· ${relTime(p.created_at)}</span>
+          ${rankBadge(i)}
         </div>
-        <span class="post-score">Score ${fmtScore(p.score)}</span>
+        <div class="post-text">${escHtml(p.description)}</div>
+        <div class="post-stats">
+          <div class="stat"><div class="stat-dot heart"></div><span class="stat-val">${p.likes}</span><span style="font-size:12px;color:var(--muted)">likes</span></div>
+          <div class="stat"><div class="stat-dot share"></div><span class="stat-val">${p.shares}</span><span style="font-size:12px;color:var(--muted)">shares</span></div>
+          <div class="stat"><div class="stat-dot save"></div><span class="stat-val">${p.saves}</span><span style="font-size:12px;color:var(--muted)">saves</span></div>
+        </div>
+        <div class="score-bar-wrap">
+          <div class="score-label">
+            <span class="score-label-text">score</span>
+            <span class="score-label-val">${fmtScore(p.score)}</span>
+          </div>
+          <div class="score-bar-track">
+            <div class="score-bar-fill" style="width:${Math.round((p.score / maxScore) * 100)}%"></div>
+          </div>
+        </div>
       </div>
     </div>
   `).join("");
 }
 
-function cap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
 
-function escapeHtml(s) {
-  return String(s).replace(/[&<>"']/g, c => ({
-    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
-  }[c]));
+async function renderList() {
+  const feed = document.getElementById("post-feed");
+  const posts = await api.posts(state.sortBy, state.order);
+
+
+  document.querySelectorAll(".sort-chip").forEach(el => {
+    const active = el.dataset.sort === state.sortBy;
+    el.classList.toggle("active", active);
+    el.querySelector(".sort-dir").textContent = active
+      ? (state.order === "asc" ? "↑" : "↓") : "";
+  });
+
+  if (!posts.length) {
+    feed.innerHTML = `<div class="empty">
+      <div class="empty-icon">+</div>
+      <h3>No posts yet</h3>
+      <p>Hit "+ Post" to add the first entry</p>
+    </div>`;
+    return;
+  }
+
+  feed.innerHTML = posts.map(p => `
+    <div class="post">
+      <div class="post-avatar" style="background:${avatarColor(p.id)}">${avatarLetter(p.description)}</div>
+      <div class="post-body">
+        <div class="post-header">
+          <span class="post-handle">@post_${p.id}</span>
+          <span class="post-time">· ${relTime(p.created_at)}</span>
+          <span class="post-rank-badge" style="margin-left:auto;font-family:var(--mono);font-size:11px">
+            ${fmtScore(p.score)} pts
+          </span>
+        </div>
+        <div class="post-text">${escHtml(p.description)}</div>
+        <div class="post-engage">
+          <button class="eng-btn like" data-action="like" data-id="${p.id}">
+            <span class="eng-icon">${ICONS.heart}</span>
+            <span class="eng-count">${p.likes}</span>
+          </button>
+          <button class="eng-btn share" data-action="share" data-id="${p.id}">
+            <span class="eng-icon">${ICONS.share}</span>
+            <span class="eng-count">${p.shares}</span>
+          </button>
+          <button class="eng-btn save" data-action="save" data-id="${p.id}">
+            <span class="eng-icon">${ICONS.save}</span>
+            <span class="eng-count">${p.saves}</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  `).join("");
 }
 
-/* ============================================================
-   View switching
-   ============================================================ */
 function show(view) {
   state.view = view;
   document.getElementById("home-view").classList.toggle("hidden", view !== "home");
   document.getElementById("list-view").classList.toggle("hidden", view !== "list");
+  document.getElementById("tab-home").classList.toggle("active", view === "home");
+  document.getElementById("tab-list").classList.toggle("active", view === "list");
   refresh();
 }
 
@@ -463,69 +581,39 @@ async function refresh() {
     if (state.view === "home") await renderHome();
     else await renderList();
   } catch (err) {
-    toast("Server error: " + err.message);
+    toast("Error: " + err.message);
     console.error(err);
   }
 }
 
-/* ============================================================
-   Event wiring
-   ============================================================ */
-document.getElementById("btn-open-list").onclick = () => show("list");
-document.getElementById("btn-back").onclick = () => show("home");
-
-document.getElementById("btn-open-add-home").onclick = openAddModal;
-document.getElementById("btn-open-add-list").onclick = openAddModal;
-document.getElementById("btn-close-modal").onclick = closeAddModal;
-document.getElementById("btn-cancel-add").onclick = closeAddModal;
-document.getElementById("btn-submit-add").onclick = submitAdd;
-
-// Filters dropdown toggle
-document.getElementById("btn-filters").onclick = (e) => {
-  e.stopPropagation();
-  document.getElementById("filters-dropdown").classList.toggle("hidden");
-};
-// Click-outside to close
-document.addEventListener("click", (e) => {
-  const dd = document.getElementById("filters-dropdown");
-  if (!dd.contains(e.target) && e.target.id !== "btn-filters") {
-    dd.classList.add("hidden");
-  }
-});
-
-// Sort item clicks — toggle asc/desc when clicking same column
-document.querySelectorAll(".dropdown-item").forEach(el => {
-  el.onclick = (e) => {
-    e.stopPropagation();
+document.querySelectorAll(".sort-chip").forEach(el => {
+  el.onclick = () => {
     const col = el.dataset.sort;
     if (state.sortBy === col) {
       state.order = state.order === "asc" ? "desc" : "asc";
     } else {
       state.sortBy = col;
-      state.order = "asc";  // new column → start ascending per spec
+      state.order = col === "description" ? "asc" : "desc";
     }
     refresh();
   };
 });
 
-// Engagement button clicks — delegated on #post-list
-document.getElementById("post-list").onclick = async (e) => {
-  const btn = e.target.closest("button.engagement");
+document.getElementById("post-feed").onclick = async (e) => {
+  const btn = e.target.closest("button.eng-btn");
   if (!btn) return;
   const { id, action } = btn.dataset;
   try {
     await api[action](id);
     refresh();
-  } catch (err) {
-    toast("Action failed: " + err.message);
-  }
+  } catch (err) { toast("Failed: " + err.message); }
 };
 
-function openAddModal() {
+function openModal() {
   document.getElementById("modal-backdrop").classList.remove("hidden");
-  document.getElementById("input-description").focus();
+  setTimeout(() => document.getElementById("input-description").focus(), 50);
 }
-function closeAddModal() {
+function closeModal() {
   document.getElementById("modal-backdrop").classList.add("hidden");
   document.getElementById("input-description").value = "";
   document.getElementById("input-likes").value = "0";
@@ -542,17 +630,21 @@ async function submitAdd() {
       shares: +document.getElementById("input-shares").value || 0,
       saves:  +document.getElementById("input-saves").value  || 0,
     });
-    closeAddModal();
-    toast("Post added");
+    closeModal();
+    toast("Post added ✓");
     refresh();
-  } catch (err) {
-    toast("Add failed: " + err.message);
-  }
+  } catch (err) { toast("Add failed: " + err.message); }
 }
 
-/* ============================================================
-   Initial load + polling fallback (every 10s)
-   ============================================================ */
+document.getElementById("btn-open-add").onclick = openModal;
+document.getElementById("btn-close-modal").onclick = closeModal;
+document.getElementById("btn-cancel-add").onclick = closeModal;
+document.getElementById("btn-submit-add").onclick = submitAdd;
+
+document.getElementById("modal-backdrop").onclick = (e) => {
+  if (e.target === document.getElementById("modal-backdrop")) closeModal();
+};
+
 refresh();
 setInterval(refresh, 10000);
 </script>
