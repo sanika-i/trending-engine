@@ -18,19 +18,6 @@ from fastapi import FastAPI, HTTPException, Query, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 import yaml
-
-# from . import crud
-# from .database import init_db
-# from .models import (
-#     HistoryEntry,
-#     InfoResponse,
-#     PerformanceResponse,
-#     PostCreate,
-#     PostResponse,
-#     PostUpdate,
-# )
-# from .performance import TimingMiddleware, get_performance_snapshot
-# from .stats import column_stats, score_distribution
 import crud
 from database import init_db
 from models import (
@@ -58,8 +45,6 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# Allow the frontend (which may be served from a different origin, e.g. file://
-# or localhost:5173) to call us. Wide-open CORS is fine for a hackathon demo.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -69,24 +54,15 @@ app.add_middleware(
 
 app.add_middleware(TimingMiddleware)
 
-
-# --------------------------------------------------------------------------- #
-#  /add                                                                       #
-# --------------------------------------------------------------------------- #
-
 @app.post("/add", response_model=PostResponse, status_code=201)
 def add_entry(payload: PostCreate) -> dict:
     return crud.add_post(
+        author=payload.author,
         description=payload.description,
         likes=payload.likes,
         shares=payload.shares,
         saves=payload.saves,
     )
-
-
-# --------------------------------------------------------------------------- #
-#  /remove                                                                    #
-# --------------------------------------------------------------------------- #
 
 @app.delete("/remove")
 def remove_entry(
@@ -104,11 +80,6 @@ def remove_entry(
     if not ok:
         raise HTTPException(status_code=404, detail=f"Post {id} not found")
     return {"removed": 1, "id": id}
-
-
-# --------------------------------------------------------------------------- #
-#  /leaderboard                                                               #
-# --------------------------------------------------------------------------- #
 
 @app.get("/leaderboard")
 def leaderboard(format: str = Query("json", pattern="^(json|html)$")) -> Response:
@@ -168,11 +139,6 @@ def _json_dumps(obj) -> str:
         raise TypeError
     return json.dumps(obj, default=default)
 
-
-# --------------------------------------------------------------------------- #
-#  /posts  (powers the List view — not in the spec, added for the UI)         #
-# --------------------------------------------------------------------------- #
-
 @app.get("/posts", response_model=list[PostResponse])
 def all_posts(
     sort_by: str = Query("score"),
@@ -199,11 +165,6 @@ def update(post_id: int, payload: PostUpdate) -> dict:
         raise HTTPException(status_code=404, detail=f"Post {post_id} not found")
     return post
 
-
-# --------------------------------------------------------------------------- #
-#  Engagement endpoints (+1 like/share/save)                                  #
-# --------------------------------------------------------------------------- #
-
 @app.post("/posts/{post_id}/like", response_model=PostResponse)
 def like(post_id: int) -> dict:
     post = crud.like_post(post_id)
@@ -227,11 +188,6 @@ def save(post_id: int) -> dict:
         raise HTTPException(status_code=404, detail=f"Post {post_id} not found")
     return post
 
-
-# --------------------------------------------------------------------------- #
-#  /info                                                                      #
-# --------------------------------------------------------------------------- #
-
 @app.get("/info", response_model=InfoResponse)
 def info() -> dict:
     posts = crud.list_posts(sort_by="score", order="desc")
@@ -249,11 +205,6 @@ def info() -> dict:
         "score_distribution": score_distribution(scores),
     }
 
-
-# --------------------------------------------------------------------------- #
-#  /history                                                                   #
-# --------------------------------------------------------------------------- #
-
 @app.get("/history", response_model=list[HistoryEntry])
 def history(
     start_date: Optional[str] = Query(None, description="ISO-8601 datetime"),
@@ -264,19 +215,9 @@ def history(
 ) -> list[dict]:
     return crud.query_history(start_date, end_date, post_id, min_score, max_score)
 
-
-# --------------------------------------------------------------------------- #
-#  /performance                                                               #
-# --------------------------------------------------------------------------- #
-
 @app.get("/performance", response_model=PerformanceResponse)
 def performance() -> dict:
     return get_performance_snapshot()
-
-
-# --------------------------------------------------------------------------- #
-#  /openapi.yaml — the hackathon deliverable                                  #
-# --------------------------------------------------------------------------- #
 
 @app.get("/openapi.yaml", include_in_schema=False)
 def openapi_yaml() -> Response:

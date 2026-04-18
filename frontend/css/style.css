@@ -277,24 +277,49 @@ button:active { transform: scale(0.96); }
 .modal-body { padding: 20px; }
 
 .field { margin-bottom: 18px; }
+
 .field label {
-  display: block; font-size: 12px; font-weight: 600;
-  color: var(--muted); margin-bottom: 8px;
-  text-transform: uppercase; letter-spacing: 0.06em;
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
 }
+
 .field textarea,
-.field input[type="number"] {
-  width: 100%; background: var(--surface-2);
+.field input[type="number"],
+.field input[type="text"] {
+  width: 100%;
+  background: var(--surface-2);
   border: 0.5px solid var(--border-2);
   border-radius: var(--radius-sm);
-  color: var(--text); font-family: var(--sans);
-  font-size: 15px; padding: 10px 14px;
-  outline: none; transition: border-color 0.15s;
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 15px;
+  padding: 10px 14px;
+  outline: none;
+  transition: border-color 0.15s;
 }
+
 .field textarea:focus,
-.field input[type="number"]:focus { border-color: var(--accent); }
-.field textarea { min-height: 80px; resize: vertical; line-height: 1.5; }
-.field-hint { font-size: 12px; color: var(--muted); margin-top: 5px; }
+.field input[type="number"]:focus,
+.field input[type="text"]:focus {
+  border-color: var(--accent);
+}
+
+.field textarea {
+  min-height: 80px;
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.field-hint {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 5px;
+}
 
 .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
 .grid-3 label {

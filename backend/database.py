@@ -1,23 +1,7 @@
-"""
-Database layer for the leaderboard.
-
-Uses SQLite because:
-  - Zero setup, single file, persistent across restarts
-  - Stdlib only (sqlite3) — no extra dependency
-  - Plenty fast for a 24-hour hackathon demo
-
-Two tables:
-  - posts:   the current state of each leaderboard entry
-  - history: an append-only audit log of every score-relevant event
-             (used by /history endpoint for date-range / id / engagement filters)
-"""
-
 import sqlite3
 from contextlib import contextmanager
 from pathlib import Path
 
-# Keep the DB file next to the app so Docker volumes can mount it easily.
-# DB_PATH = Path(__file__).parent.parent / "leaderboard.db"
 DB_PATH = Path(__file__).parent / "leaderboard.db"
 
 
@@ -28,7 +12,6 @@ def get_connection() -> sqlite3.Connection:
     """
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
-    # Enforce foreign keys (off by default in SQLite for legacy reasons).
     conn.execute("PRAGMA foreign_keys = ON")
     return conn
 
@@ -65,6 +48,7 @@ def init_db() -> None:
         cur.execute("""
             CREATE TABLE IF NOT EXISTS posts (
                 id          INTEGER PRIMARY KEY AUTOINCREMENT,
+                author      TEXT    NOT NULL,
                 description TEXT    NOT NULL,
                 likes       INTEGER NOT NULL DEFAULT 0,
                 shares      INTEGER NOT NULL DEFAULT 0,
@@ -86,7 +70,5 @@ def init_db() -> None:
             )
         """)
 
-        # Indexes on the columns /history filters on most often.
-        # Trade a small bit of write speed for much faster range queries.
         cur.execute("CREATE INDEX IF NOT EXISTS idx_history_timestamp ON history(timestamp)")
         cur.execute("CREATE INDEX IF NOT EXISTS idx_history_post_id ON history(post_id)")

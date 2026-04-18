@@ -63,7 +63,7 @@ async function renderHome() {
       <div class="post-avatar" style="background:${avatarColor(p.id)}">${avatarLetter(p.description)}</div>
       <div class="post-body">
         <div class="post-header">
-          <span class="post-handle">@post_${p.id}</span>
+          <span class="post-handle">@${escHtml(p.author || "unknown")}</span>
           <span class="post-time">· ${relTime(p.created_at)}</span>
           ${rankBadge(i)}
         </div>
@@ -105,7 +105,7 @@ async function renderList() {
       <div class="post-avatar" style="background:${avatarColor(p.id)}">${avatarLetter(p.description)}</div>
       <div class="post-body">
         <div class="post-header">
-          <span class="post-handle">@post_${p.id}</span>
+          <span class="post-handle">@${escHtml(p.author || "unknown")}</span>
           <span class="post-time">· ${relTime(p.created_at)}</span>
           <span class="post-rank-badge" style="margin-left:auto">${fmtScore(p.score)} pts</span>
         </div>

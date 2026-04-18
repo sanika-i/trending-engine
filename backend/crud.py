@@ -15,15 +15,11 @@ Anti-injection notes:
 from datetime import datetime, timezone
 from typing import Optional
 
-# from .database import db_cursor
-# from .scoring import compute_score
 from database import db_cursor
 from scoring import compute_score
 
-# Whitelist for sort_by. SQLite can't parameterize column names,
-# so we enforce a fixed allowlist to prevent SQL injection.
 SORTABLE_COLUMNS = {
-    "score": "score",           # special-cased below (computed, not stored)
+    "score": "score",
     "description": "description",
     "likes": "likes",
     "shares": "shares",
@@ -31,7 +27,6 @@ SORTABLE_COLUMNS = {
     "posted": "created_at",
     "created_at": "created_at",
 }
-
 
 def _now_iso() -> str:
     """UTC ISO-8601 timestamp. Using UTC avoids timezone math in the decay formula."""
@@ -42,6 +37,7 @@ def _row_to_post(row) -> dict:
     """Convert a sqlite3.Row from posts table into a scored response dict."""
     return {
         "id": row["id"],
+        "author": row["author"],
         "description": row["description"],
         "likes": row["likes"],
         "shares": row["shares"],
@@ -52,19 +48,14 @@ def _row_to_post(row) -> dict:
         ),
     }
 
-
-# --------------------------------------------------------------------------- #
-#  Create                                                                     #
-# --------------------------------------------------------------------------- #
-
-def add_post(description: str, likes: int, shares: int, saves: int) -> dict:
+def add_post(author: str, description: str, likes: int, shares: int, saves: int) -> dict:
     """Insert a new post and log an 'add' event in history. Returns the new post."""
     now = _now_iso()
     with db_cursor() as cur:
         cur.execute(
-            "INSERT INTO posts (description, likes, shares, saves, created_at) "
-            "VALUES (?, ?, ?, ?, ?)",
-            (description, likes, shares, saves, now),
+            "INSERT INTO posts (author, description, likes, shares, saves, created_at) "
+            "VALUES (?, ?, ?, ?, ?, ?)",
+            (author, description, likes, shares, saves, now),
         )
         post_id = cur.lastrowid
 
@@ -76,11 +67,6 @@ def add_post(description: str, likes: int, shares: int, saves: int) -> dict:
 
         cur.execute("SELECT * FROM posts WHERE id = ?", (post_id,))
         return _row_to_post(cur.fetchone())
-
-
-# --------------------------------------------------------------------------- #
-#  Read                                                                       #
-# --------------------------------------------------------------------------- #
 
 def get_post(post_id: int) -> Optional[dict]:
     with db_cursor() as cur:
@@ -101,8 +87,6 @@ def list_posts(sort_by: str = "score", order: str = "desc") -> list[dict]:
 
     with db_cursor() as cur:
         if sort_by in ("score", "posted"):
-            # Score requires in-Python sort (decay is dynamic).
-            # "posted" sorts by created_at — handled in Python for consistency.
             cur.execute("SELECT * FROM posts")
             posts = [_row_to_post(r) for r in cur.fetchall()]
             key = "score" if sort_by == "score" else "created_at"
@@ -111,7 +95,6 @@ def list_posts(sort_by: str = "score", order: str = "desc") -> list[dict]:
 
         column = SORTABLE_COLUMNS[sort_by]
         direction = "DESC" if order == "desc" else "ASC"
-        # Safe: column comes from whitelist, direction from literal check above.
         cur.execute(f"SELECT * FROM posts ORDER BY {column} {direction}")
         return [_row_to_post(r) for r in cur.fetchall()]
 
@@ -120,11 +103,6 @@ def top_leaderboard(limit: int = 10) -> list[dict]:
     """Top-N posts by computed score, descending. Powers GET /leaderboard."""
     posts = list_posts(sort_by="score", order="desc")
     return posts[:limit]
-
-
-# --------------------------------------------------------------------------- #
-#  Update                                                                     #
-# --------------------------------------------------------------------------- #
 
 def _increment(post_id: int, column: str, event_type: str) -> Optional[dict]:
     """
@@ -169,7 +147,7 @@ def update_post(post_id: int, fields: dict) -> Optional[dict]:
     if not fields:
         return get_post(post_id)
 
-    allowed = {"description", "likes", "shares", "saves"}
+    allowed = {"author", "description", "likes", "shares", "saves"}
     if not set(fields).issubset(allowed):
         raise ValueError(f"Invalid fields: {set(fields) - allowed}")
 
@@ -192,11 +170,6 @@ def update_post(post_id: int, fields: dict) -> Optional[dict]:
         )
         return _row_to_post(row)
 
-
-# --------------------------------------------------------------------------- #
-#  Delete                                                                     #
-# --------------------------------------------------------------------------- #
-
 def remove_post(post_id: int) -> bool:
     """Delete one post (and its history via ON DELETE CASCADE). Returns True if removed."""
     with db_cursor() as cur:
@@ -211,11 +184,6 @@ def remove_all_posts() -> int:
         count = cur.fetchone()["c"]
         cur.execute("DELETE FROM posts")
         return count
-
-
-# --------------------------------------------------------------------------- #
-#  History                                                                    #
-# --------------------------------------------------------------------------- #
 
 def query_history(
     start_date: Optional[str] = None,

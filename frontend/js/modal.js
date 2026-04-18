@@ -5,6 +5,7 @@ function openModal() {
 
 function closeModal() {
   document.getElementById("modal-backdrop").classList.add("hidden");
+  document.getElementById("input-author").value = "";
   document.getElementById("input-description").value = "";
   document.getElementById("input-likes").value        = "0";
   document.getElementById("input-shares").value       = "0";
@@ -12,11 +13,13 @@ function closeModal() {
 }
 
 async function submitAdd() {
+  const author = document.getElementById("input-author").value.trim();
   const desc = document.getElementById("input-description").value.trim();
   if (!desc) { toast("Description is required"); return; }
 
   try {
     await api.add({
+      author: author, 
       description: desc,
       likes:  +document.getElementById("input-likes").value  || 0,
       shares: +document.getElementById("input-shares").value || 0,
