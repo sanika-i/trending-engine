@@ -17,7 +17,8 @@ from contextlib import contextmanager
 from pathlib import Path
 
 # Keep the DB file next to the app so Docker volumes can mount it easily.
-DB_PATH = Path(__file__).parent.parent / "leaderboard.db"
+# DB_PATH = Path(__file__).parent.parent / "leaderboard.db"
+DB_PATH = Path(__file__).parent / "leaderboard.db"
 
 
 def get_connection() -> sqlite3.Connection:

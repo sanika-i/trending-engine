@@ -19,9 +19,21 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 import yaml
 
-from . import crud
-from .database import init_db
-from .models import (
+# from . import crud
+# from .database import init_db
+# from .models import (
+#     HistoryEntry,
+#     InfoResponse,
+#     PerformanceResponse,
+#     PostCreate,
+#     PostResponse,
+#     PostUpdate,
+# )
+# from .performance import TimingMiddleware, get_performance_snapshot
+# from .stats import column_stats, score_distribution
+import crud
+from database import init_db
+from models import (
     HistoryEntry,
     InfoResponse,
     PerformanceResponse,
@@ -29,9 +41,8 @@ from .models import (
     PostResponse,
     PostUpdate,
 )
-from .performance import TimingMiddleware, get_performance_snapshot
-from .stats import column_stats, score_distribution
-
+from performance import TimingMiddleware, get_performance_snapshot
+from stats import column_stats, score_distribution
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

@@ -15,8 +15,10 @@ Anti-injection notes:
 from datetime import datetime, timezone
 from typing import Optional
 
-from .database import db_cursor
-from .scoring import compute_score
+# from .database import db_cursor
+# from .scoring import compute_score
+from database import db_cursor
+from scoring import compute_score
 
 # Whitelist for sort_by. SQLite can't parameterize column names,
 # so we enforce a fixed allowlist to prevent SQL injection.
