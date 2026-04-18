@@ -11,7 +11,7 @@ const ICONS = {
 };
 
 function avatarColor(id)  { return AVATAR_COLORS[id % AVATAR_COLORS.length]; }
-function avatarLetter(desc) { return (desc || "?")[0].toUpperCase(); }
+function avatarLetter(auth) { return (auth || "?")[0].toUpperCase(); }
 
 function relTime(iso) {
   const ms = Date.now() - new Date(iso);
@@ -60,7 +60,7 @@ async function renderHome() {
 
   feed.innerHTML = posts.map((p, i) => `
     <div class="post">
-      <div class="post-avatar" style="background:${avatarColor(p.id)}">${avatarLetter(p.description)}</div>
+      <div class="post-avatar" style="background:${avatarColor(p.id)}">${avatarLetter(p.author)}</div>
       <div class="post-body">
         <div class="post-header">
           <span class="post-handle">@${escHtml(p.author || "unknown")}</span>
@@ -102,7 +102,7 @@ async function renderList() {
 
   feed.innerHTML = posts.map(p => `
     <div class="post">
-      <div class="post-avatar" style="background:${avatarColor(p.id)}">${avatarLetter(p.description)}</div>
+      <div class="post-avatar" style="background:${avatarColor(p.id)}">${avatarLetter(p.author)}</div>
       <div class="post-body">
         <div class="post-header">
           <span class="post-handle">@${escHtml(p.author || "unknown")}</span>
