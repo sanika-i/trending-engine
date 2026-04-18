@@ -43,8 +43,12 @@ document.getElementById("modal-backdrop").onclick = (e) => {
   if (e.target === document.getElementById("modal-backdrop")) closeModal();
 };
 
-document.getElementById("history-modal").onclick = (e) => {
-  if (e.target.id === "history-modal") closeHistoryModal();
+const historyModal = document.getElementById("history-modal");
+
+historyModal.onclick = (e) => {
+  if (e.target === historyModal) {
+    closeHistoryModal();
+  }
 };
 
 async function openHistoryModal(postId) {
