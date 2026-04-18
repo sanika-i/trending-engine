@@ -20,4 +20,8 @@ const api = {
   share: (id) => req(`/posts/${id}/share`, { method: "POST" }),
   save: (id) => req(`/posts/${id}/save`,  { method: "POST" }),
   info: () => req("/info"),
+  history: (params = {}) => {
+    const query = new URLSearchParams(params).toString();
+    return req(`/history${query ? `?${query}` : ""}`);
+  },
 };

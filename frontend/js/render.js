@@ -125,6 +125,9 @@ async function renderList() {
             <span class="eng-icon">${ICONS.save}</span>
             <span class="eng-count">${p.saves}</span>
           </button>
+          <button class="hist-btn" onclick="openHistoryModal(${p.id})">
+              🕒 History
+          </button>
         </div>
       </div>
     </div>

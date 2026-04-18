@@ -50,6 +50,7 @@ document.getElementById("post-feed").onclick = async (e) => {
   const btn = e.target.closest("button.eng-btn");
   if (!btn) return;
   const { id, action } = btn.dataset;
+  if (!action) return;
   try {
     await api[action](id);
     refresh();

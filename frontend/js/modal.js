@@ -42,3 +42,42 @@ document.getElementById("btn-submit-add").onclick  = submitAdd;
 document.getElementById("modal-backdrop").onclick = (e) => {
   if (e.target === document.getElementById("modal-backdrop")) closeModal();
 };
+
+async function openHistoryModal(postId) {
+  const modal = document.getElementById("history-modal");
+  const body  = document.getElementById("history-modal-body");
+
+  modal.classList.remove("hidden");
+  body.innerHTML = "Loading...";
+
+  try {
+    const data = await api.history({ post_id: postId });
+
+    if (!data.length) {
+      body.innerHTML = "<div class='empty'>No history found</div>";
+      return;
+    }
+
+    body.innerHTML = data.map(h => `
+      <div class="post">
+        <div class="post-body">
+          <div class="post-header">
+            <span class="post-time">${new Date(h.timestamp).toLocaleString()}</span>
+          </div>
+
+          <div class="post-text">
+            Event: ${h.event_type}<br>
+            Likes: ${h.likes} | Shares: ${h.shares} | Saves: ${h.saves}
+          </div>
+        </div>
+      </div>
+    `).join("");
+
+  } catch (err) {
+    body.innerHTML = "Failed to load history";
+  }
+}
+
+function closeHistoryModal() {
+  document.getElementById("history-modal").classList.add("hidden");
+}
