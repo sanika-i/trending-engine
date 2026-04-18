@@ -14,7 +14,6 @@ Scores are computed on read, not stored — so decay applies automatically as ti
 
 ```
 backend/
-├── app/
 │   ├── main.py          # FastAPI app, routes, middleware
 │   ├── database.py      # SQLite connection + schema
 │   ├── models.py        # Pydantic request/response models
@@ -23,6 +22,13 @@ backend/
 │   ├── scoring.py       # Decayed-score formula
 │   └── performance.py   # Request-timing middleware
 ├── frontend/
+│   ├──css
+│   │   ├──style.css
+│   ├──js
+│   │   ├──api.js
+│   │   ├──app.js
+│   │   ├──modal.js
+│   │   ├──render.js
 │   └── index.html       # Single-file vanilla JS UI
 ├── requirements.txt
 ├── Dockerfile
