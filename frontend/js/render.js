@@ -149,9 +149,7 @@ async function renderStats() {
       <div class="stat-card">
         <div class="stat-title">${title}</div>
         ${statRow("Min", s.min)}
-        ${statRow("Q1", s.q1.toFixed(1))}
         ${statRow("Median", s.median.toFixed(1))}
-        ${statRow("Q3", s.q3.toFixed(1))}
         ${statRow("Max", s.max)}
         ${statRow("Std Dev", s.stddev.toFixed(1))}
       </div>
