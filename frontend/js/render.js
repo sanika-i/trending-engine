@@ -7,18 +7,20 @@ const AVATAR_COLORS = [
 const ICONS = {
   heart: `<svg viewBox="0 0 10 9"><path d="M5 8.5S.5 5.5.5 2.8A2.3 2.3 0 015 1.6a2.3 2.3 0 014.5 1.2C9.5 5.5 5 8.5 5 8.5z"/></svg>`,
   share: `<svg viewBox="0 0 10 10"><path d="M1 5l3-3v2h2c2 0 3 1.5 3 3 0-1-1-2-3-2H4v2L1 5z"/></svg>`,
-  save:  `<svg viewBox="0 0 10 11"><path d="M2 1h6v9L5 7.5 2 10V1z"/></svg>`,
+  save: `<svg viewBox="0 0 10 11"><path d="M2 1h6v9L5 7.5 2 10V1z"/></svg>`,
 };
 
-function avatarColor(id)  { return AVATAR_COLORS[id % AVATAR_COLORS.length]; }
+let _scoreChart = null;
+
+function avatarColor(id) { return AVATAR_COLORS[id % AVATAR_COLORS.length]; }
 function avatarLetter(auth) { return (auth || "?")[0].toUpperCase(); }
 
 function relTime(iso) {
   const ms = Date.now() - new Date(iso);
-  const m  = Math.floor(ms / 60000);
-  const h  = Math.floor(ms / 3600000);
-  const d  = Math.floor(ms / 86400000);
-  if (m < 1)  return "just now";
+  const m = Math.floor(ms / 60000);
+  const h = Math.floor(ms / 3600000);
+  const d = Math.floor(ms / 86400000);
+  if (m < 1) return "just now";
   if (m < 60) return `${m}m`;
   if (h < 24) return `${h}h`;
   if (d === 1) return "1d";
@@ -36,9 +38,9 @@ function escHtml(s) {
 }
 
 function rankBadge(i) {
-  const n   = i + 1;
+  const n = i + 1;
   const cls = n === 1 ? "rank-1" : n === 2 ? "rank-2" : n === 3 ? "rank-3" : "";
-  const lbl = n === 1 ? "🥇 #1"  : n === 2 ? "🥈 #2"  : n === 3 ? "🥉 #3"  : `#${n}`;
+  const lbl = n === 1 ? "🥇 #1" : n === 2 ? "🥈 #2" : n === 3 ? "🥉 #3" : `#${n}`;
   return `<span class="post-rank-badge ${cls}">${lbl}</span>`;
 }
 
@@ -51,7 +53,7 @@ function emptyState() {
 }
 
 async function renderHome() {
-  const feed  = document.getElementById("leaderboard-feed");
+  const feed = document.getElementById("leaderboard-feed");
   const posts = await api.leaderboard();
 
   if (!posts.length) { feed.innerHTML = emptyState(); return; }
@@ -88,7 +90,7 @@ async function renderHome() {
 }
 
 async function renderList() {
-  const feed  = document.getElementById("post-feed");
+  const feed = document.getElementById("post-feed");
   const posts = await api.posts(state.sortBy, state.order);
 
   document.querySelectorAll(".sort-chip").forEach(el => {
@@ -130,60 +132,121 @@ async function renderList() {
 }
 
 async function renderStats() {
-  const data = await api.info();
   const container = document.getElementById("stats-feed");
+  const data = await api.info();
 
-  function renderBlock(title, stats) {
+  function statRow(label, val) {
+    return `<div class="stat-row"><span>${label}</span><span>${val}</span></div>`;
+  }
+
+  function renderBlock(title, s) {
     return `
-      <div class="post">
-        <div class="post-body">
-          <div class="post-header">
-            <span class="post-handle">${title}</span>
-          </div>
-
-          <div class="post-text">
-            Mean: ${stats.mean.toFixed(2)} <br>
-            Median: ${stats.median.toFixed(2)} <br>
-            Q1: ${stats.q1.toFixed(2)} <br>
-            Q3: ${stats.q3.toFixed(2)} <br>
-            Std Dev: ${stats.stddev.toFixed(2)} <br>
-            P90: ${stats.p90.toFixed(2)} <br>
-            P99: ${stats.p99.toFixed(2)} <br>
-            Min: ${stats.min} <br>
-            Max: ${stats.max}
-          </div>
-        </div>
+      <div class="stat-card">
+        <div class="stat-title">${title}</div>
+        ${statRow("Min", s.min)}
+        ${statRow("Q1", s.q1.toFixed(1))}
+        ${statRow("Median", s.median.toFixed(1))}
+        ${statRow("Q3", s.q3.toFixed(1))}
+        ${statRow("Max", s.max)}
+        ${statRow("Std Dev", s.stddev.toFixed(1))}
       </div>
     `;
   }
 
+  const skewed = data.score.median < data.score.mean;
+  const volatile = data.score.stddev > 20;
+
   container.innerHTML = `
-    <div class="post">
-      <div class="post-body">
-        <div class="post-header">
-          <span class="post-handle">Overview</span>
-        </div>
-        <div class="post-text">
-          Total Posts: ${data.total_posts}
-        </div>
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-title">Total Posts</div>
+        <div class="kpi-value">${data.total_posts}</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-title">Avg Score</div>
+        <div class="kpi-value">${data.score.mean.toFixed(0)}</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-title">Median Score</div>
+        <div class="kpi-value">${data.score.median.toFixed(0)}</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-title">Top Score</div>
+        <div class="kpi-value">${data.score.max}</div>
       </div>
     </div>
-
-    ${renderBlock("Likes", data.likes)}
-    ${renderBlock("Shares", data.shares)}
-    ${renderBlock("Saves", data.saves)}
-    ${renderBlock("Score", data.score)}
-
-    <div class="post">
-      <div class="post-body">
-        <div class="post-header">
-          <span class="post-handle">Score Distribution</span>
-        </div>
-        <div class="post-text">
-          Buckets: ${data.score_distribution.bucket_edges.join(", ")} <br>
-          Counts: ${data.score_distribution.counts.join(", ")}
-        </div>
-      </div>
+    <div class="stat-grid">
+      ${renderBlock("Likes", data.likes)}
+      ${renderBlock("Shares", data.shares)}
+      ${renderBlock("Saves", data.saves)}
+      ${renderBlock("Score", data.score)}
+    </div>
+    <div class="chart-card">
+      <div class="stat-title">Score Distribution</div>
+      <canvas id="scoreChart"></canvas>
+    </div>
+    <div class="insight-card">
+      <div class="stat-title">Insights</div>
+      <p>Median (${data.score.median.toFixed(0)}) is ${skewed ? "lower" : "higher"} than mean
+         (${data.score.mean.toFixed(0)}), indicating
+         ${skewed ? "a few high-performing posts skew the average upward." : "score distribution is fairly balanced."}</p>
+      <p>Standard deviation of ${data.score.stddev.toFixed(0)} suggests
+         ${volatile ? "inconsistent engagement, viral spikes dominate." : "relatively consistent engagement across posts."}</p>
     </div>
   `;
+  if (_scoreChart) {
+    _scoreChart.destroy();
+    _scoreChart = null;
+  }
+
+  const edges = data.score_distribution.bucket_edges;
+  const counts = data.score_distribution.counts;
+  const labels = counts.map((_, i) =>
+    `${edges[i].toFixed(0)}–${edges[i + 1].toFixed(0)}`
+  );
+
+  _scoreChart = new Chart(document.getElementById("scoreChart"), {
+    type: "bar",
+    data: {
+      labels,
+      datasets: [{
+        label: "Posts",
+        data: counts,
+        backgroundColor: "rgba(17, 135, 214, 0.45)",
+        borderColor: "rgba(17, 135, 214, 0.45)",
+        borderWidth: 1,
+        borderRadius: 4,
+      }],
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            title: (items) => `Score range: ${items[0].label}`,
+            label: (item) => `${item.raw} post${item.raw !== 1 ? "s" : ""}`,
+          },
+        },
+      },
+      scales: {
+        x: {
+          ticks: {
+            color: "#71767b",
+            font: { size: 11 },
+            maxRotation: 45,
+            minRotation: 45,
+          },
+          grid: { display: false },
+        },
+        y: {
+          ticks: { color: "#71767b", stepSize: 1 },
+          grid: { display: false},
+          beginAtZero: true,
+        },
+      },
+    },
+  });
 }
+
+
