@@ -24,4 +24,5 @@ const api = {
     const query = new URLSearchParams(params).toString();
     return req(`/history${query ? `?${query}` : ""}`);
   },
+  performance: () => req("/performance"),
 };

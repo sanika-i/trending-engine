@@ -254,4 +254,49 @@ async function renderStats() {
   });
 }
 
+async function renderPerformance() {
+  try {
+    const data = await api.performance();
+    const container = document.getElementById("performance-feed");
+
+    if (!data.endpoints.length) {
+      container.innerHTML = `<div class="empty">No performance data yet</div>`;
+      return;
+    }
+
+    container.innerHTML = `
+      <div class="post">
+        <div class="post-body">
+          <div class="post-header">
+            <span class="post-handle">Overall</span>
+          </div>
+          <div class="post-text">
+            Avg Response Time: ${data.overall_avg_ms.toFixed(2)} ms
+          </div>
+        </div>
+      </div>
+
+      ${data.endpoints.map(ep => `
+        <div class="post">
+          <div class="post-body">
+            <div class="post-header">
+              <span class="post-handle">${ep.method} ${ep.endpoint}</span>
+            </div>
+
+            <div class="post-text">
+              Calls: ${ep.call_count} <br>
+              Avg: ${ep.avg_ms.toFixed(2)} ms <br>
+              Min: ${ep.min_ms.toFixed(2)} ms <br>
+              Max: ${ep.max_ms.toFixed(2)} ms
+            </div>
+          </div>
+        </div>
+      `).join("")}
+    `;
+
+  } catch (err) {
+    toast("Performance load failed: " + err.message);
+  }
+}
+
 

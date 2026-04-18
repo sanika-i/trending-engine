@@ -19,6 +19,8 @@ function show(view) {
   document.getElementById("tab-home").classList.toggle("active",   view === "home");
   document.getElementById("tab-list").classList.toggle("active",   view === "list");
   document.getElementById("tab-stats").classList.toggle("active",  view === "stats");
+  document.getElementById("performance-view").classList.toggle("hidden", view !== "performance");
+  document.getElementById("tab-performance").classList.toggle("active", view === "performance");
   refresh();
 }
 
@@ -27,6 +29,7 @@ async function refresh() {
     if      (state.view === "home")  await renderHome();
     else if (state.view === "list")  await renderList();
     else if (state.view === "stats") await renderStats();
+    else if (state.view === "performance") await renderPerformance();
   } catch (err) {
     toast("Error: " + err.message);
     console.error(err);
