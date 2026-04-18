@@ -20,19 +20,20 @@ backend/
 │   ├── crud.py          # All DB operations
 │   ├── stats.py         # /info calculations (stdlib only)
 │   ├── scoring.py       # Decayed-score formula
-│   └── performance.py   # Request-timing middleware
+│   ├── performance.py   # Request-timing middleware
+│   └──requirements.txt
 ├── frontend/
-│   ├──css
-│   │   ├──style.css
-│   ├──js
-│   │   ├──api.js
-│   │   ├──app.js
-│   │   ├──modal.js
-│   │   ├──render.js
+│   ├── css
+│   │   ├── style.css
+│   ├── js
+│   │   ├── api.js
+│   │   ├── app.js
+│   │   ├── modal.js
+│   │   ├── render.js
 │   └── index.html       # Single-file vanilla JS UI
-├── requirements.txt
-├── Dockerfile
-└── docker-compose.yml
+├── docker/
+│   ├── Dockerfile
+│   └── docker-compose.yml
 ```
 
 ## Running locally
