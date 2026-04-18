@@ -26,13 +26,11 @@ def _percentile(values: Sequence[float], pct: float) -> float:
     if len(sorted_vals) == 1:
         return sorted_vals[0]
 
-    # Rank position in a 0-indexed array.
     k = (len(sorted_vals) - 1) * (pct / 100.0)
-    f = int(k)               # floor
-    c = min(f + 1, len(sorted_vals) - 1)  # ceiling, clamped
+    f = int(k)  
+    c = min(f + 1, len(sorted_vals) - 1) 
     if f == c:
         return sorted_vals[f]
-    # Linear interpolate between the two neighbours.
     return sorted_vals[f] + (sorted_vals[c] - sorted_vals[f]) * (k - f)
 
 
@@ -53,7 +51,6 @@ def column_stats(values: Sequence[float]) -> dict:
         "median": statistics.median(vals),
         "q1": _percentile(vals, 25),
         "q3": _percentile(vals, 75),
-        # pstdev (population) not stdev (sample) — we treat the table as the full population
         "stddev": statistics.pstdev(vals) if len(vals) > 1 else 0.0,
         "p90": _percentile(vals, 90),
         "p99": _percentile(vals, 99),
@@ -72,7 +69,6 @@ def score_distribution(scores: Sequence[float], num_buckets: int = 10) -> dict:
 
     lo, hi = min(scores), max(scores)
     if lo == hi:
-        # All equal — single bucket covers them.
         return {"bucket_edges": [lo, hi], "counts": [len(scores)]}
 
     width = (hi - lo) / num_buckets
@@ -80,7 +76,6 @@ def score_distribution(scores: Sequence[float], num_buckets: int = 10) -> dict:
     counts = [0] * num_buckets
 
     for s in scores:
-        # Clamp the last bucket to include the max value.
         idx = min(int((s - lo) / width), num_buckets - 1)
         counts[idx] += 1
 

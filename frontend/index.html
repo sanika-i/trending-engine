@@ -25,6 +25,7 @@
   <div class="tabs">
     <div class="tab active" id="tab-home" onclick="show('home')">Top 10</div>
     <div class="tab" id="tab-list" onclick="show('list')">All posts</div>
+    <div class="tab" id="tab-stats" onclick="show('stats')">Stats</div>
   </div>
 
   <div id="home-view">
@@ -42,6 +43,10 @@
       <div class="sort-chip" data-sort="description">A–Z <span class="sort-dir"></span></div>
     </div>
     <div class="feed" id="post-feed"></div>
+  </div>
+
+  <div id="stats-view" class="hidden">
+    <div class="feed" id="stats-feed"></div>
   </div>
 
   <div class="modal-backdrop hidden" id="modal-backdrop">
@@ -67,6 +72,7 @@
           <textarea id="input-description" placeholder="Write your post…" maxlength="500"></textarea>
           <div class="field-hint">Required · max 500 characters</div>
         </div>
+
         <div class="field">
           <label>Initial engagement <span style="font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></label>
           <div class="grid-3">
@@ -84,6 +90,7 @@
             </div>
           </div>
         </div>
+
         <div class="modal-actions">
           <button class="btn-ghost" id="btn-cancel-add">Cancel</button>
           <button class="btn-primary" id="btn-submit-add">Post it</button>

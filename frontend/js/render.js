@@ -128,3 +128,62 @@ async function renderList() {
     </div>
   `).join("");
 }
+
+async function renderStats() {
+  const data = await api.info();
+  const container = document.getElementById("stats-feed");
+
+  function renderBlock(title, stats) {
+    return `
+      <div class="post">
+        <div class="post-body">
+          <div class="post-header">
+            <span class="post-handle">${title}</span>
+          </div>
+
+          <div class="post-text">
+            Mean: ${stats.mean.toFixed(2)} <br>
+            Median: ${stats.median.toFixed(2)} <br>
+            Q1: ${stats.q1.toFixed(2)} <br>
+            Q3: ${stats.q3.toFixed(2)} <br>
+            Std Dev: ${stats.stddev.toFixed(2)} <br>
+            P90: ${stats.p90.toFixed(2)} <br>
+            P99: ${stats.p99.toFixed(2)} <br>
+            Min: ${stats.min} <br>
+            Max: ${stats.max}
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  container.innerHTML = `
+    <div class="post">
+      <div class="post-body">
+        <div class="post-header">
+          <span class="post-handle">Overview</span>
+        </div>
+        <div class="post-text">
+          Total Posts: ${data.total_posts}
+        </div>
+      </div>
+    </div>
+
+    ${renderBlock("Likes", data.likes)}
+    ${renderBlock("Shares", data.shares)}
+    ${renderBlock("Saves", data.saves)}
+    ${renderBlock("Score", data.score)}
+
+    <div class="post">
+      <div class="post-body">
+        <div class="post-header">
+          <span class="post-handle">Score Distribution</span>
+        </div>
+        <div class="post-text">
+          Buckets: ${data.score_distribution.bucket_edges.join(", ")} <br>
+          Counts: ${data.score_distribution.counts.join(", ")}
+        </div>
+      </div>
+    </div>
+  `;
+}

@@ -13,10 +13,11 @@ async function req(path, opts = {}) {
 }
 
 const api = {
-  leaderboard: ()      => req("/leaderboard"),
-  posts:       (s, o)  => req(`/posts?sort_by=${s}&order=${o}`),
-  add:         (body)  => req("/add", { method: "POST", body: JSON.stringify(body) }),
-  like:        (id)    => req(`/posts/${id}/like`,  { method: "POST" }),
-  share:       (id)    => req(`/posts/${id}/share`, { method: "POST" }),
-  save:        (id)    => req(`/posts/${id}/save`,  { method: "POST" }),
+  leaderboard: () => req("/leaderboard"),
+  posts: (s, o) => req(`/posts?sort_by=${s}&order=${o}`),
+  add: (body) => req("/add", { method: "POST", body: JSON.stringify(body) }),
+  like: (id) => req(`/posts/${id}/like`,  { method: "POST" }),
+  share: (id) => req(`/posts/${id}/share`, { method: "POST" }),
+  save: (id) => req(`/posts/${id}/save`,  { method: "POST" }),
+  info: () => req("/info"),
 };
